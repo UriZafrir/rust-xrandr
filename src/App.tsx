@@ -23,7 +23,7 @@ function App() {
         const result = await invoke("get_outputs");
         setOutputs(result as string[]);
         if ((result as string[]).length > 0) {
-          setOutput((result as string[]) || "");
+          setOutputs(result as string[]);
         }
         console.log("Fetched outputs:", result);
       } catch (error) {
