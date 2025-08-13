@@ -9,6 +9,11 @@ function App() {
 
 
   async function applyBrightness() {
+    console.log("applyBrightness called with output:", output);
+    if (!output) {
+      console.warn("No output selected. Cannot apply brightness.");
+      return;
+    }
     try {
       const result = await invoke("set_brightness", { output, value: brightness });
       console.log(result);
@@ -20,22 +25,54 @@ function App() {
   useEffect(() => {
     async function fetchOutputs() {
       try {
+        console.log("Fetching outputs...");
         const result = await invoke("get_outputs");
-        setOutputs(result as string[]);
-        if ((result as string[]).length > 0) {
-          setOutputs(result as string[]);
-        }
         console.log("Fetched outputs:", result);
+        
+        if (!result || !(result as string[]).length) {
+          console.log("No outputs found or result is invalid");
+          setOutputs([]);
+          setOutput("");
+          return;
+        }
+        
+        console.log("First output:", (result as string[])[0]);
+        setOutputs(result as string[]);
+        
+        // Force a specific output for testing
+        const firstOutput = (result as string[])[0];
+        console.log("Setting output to:", firstOutput);
+        setOutput(firstOutput);
+        
+        // Verify the output was set
+        setTimeout(() => {
+          console.log("Current output state after timeout:", output);
+        }, 100);
       } catch (error) {
         console.error("Error fetching outputs:", error);
+        setOutputs([]);
+        setOutput("");
       }
     }
     fetchOutputs();
   }, []);
 
   useEffect(() => {
+    console.log("Current output state in useEffect:", output);
     if (output) {
+      console.log("useEffect calling applyBrightness with output:", output);
       applyBrightness();
+    } else {
+      console.log("useEffect not calling applyBrightness because output is empty");
+    }
+  }, [brightness, output]);
+
+  useEffect(() => {
+    if (output) {
+      console.log("useEffect calling applyBrightness with output:", output);
+      applyBrightness();
+    } else {
+      console.log("useEffect not calling applyBrightness because output is empty");
     }
   }, [brightness, output]);
 
