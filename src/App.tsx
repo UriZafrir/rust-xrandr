@@ -1,18 +1,12 @@
 import { useState, useEffect } from "react";
-import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
   const [brightness, setBrightness] = useState(1.0);
   const [output, setOutput] = useState("");
   const [outputs, setOutputs] = useState<string[]>([]);
 
-  async function greet() {
-    setGreetMsg(await invoke("greet", { name }));
-  }
 
   async function applyBrightness() {
     try {
