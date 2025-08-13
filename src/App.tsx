@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
@@ -6,46 +6,84 @@ import "./App.css";
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
+  const [brightness, setBrightness] = useState(1.0);
+  const [output, setOutput] = useState("");
+  const [outputs, setOutputs] = useState<string[]>([]);
 
   async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     setGreetMsg(await invoke("greet", { name }));
   }
 
+  async function applyBrightness() {
+    try {
+      const result = await invoke("set_brightness", { output, value: brightness });
+      console.log(result);
+    } catch (error) {
+      console.error("Error setting brightness:", error);
+    }
+  }
+
+  useEffect(() => {
+    async function fetchOutputs() {
+      try {
+        const result = await invoke("get_outputs");
+        setOutputs(result as string[]);
+        if ((result as string[]).length > 0) {
+          setOutput((result as string[]) || "");
+        }
+        console.log("Fetched outputs:", result);
+      } catch (error) {
+        console.error("Error fetching outputs:", error);
+      }
+    }
+    fetchOutputs();
+  }, []);
+
+  useEffect(() => {
+    if (output) {
+      applyBrightness();
+    }
+  }, [brightness, output]);
+
   return (
     <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+      <h1>Xrandr Brightness Control</h1>
 
       <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <label htmlFor="output-select">Select Output:</label>
+        <select
+          id="output-select"
+          value={output}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setOutput(e.currentTarget.value)}
+        >
+          {outputs.map((out) => (
+            <option key={out} value={out}>
+              {out}
+            </option>
+          ))}
+        </select>
       </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
 
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
+      <div className="row">
+        <label htmlFor="brightness-range">Brightness:</label>
         <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
+          type="range"
+          id="brightness-range"
+          min="0.1"
+          max="1.0"
+          step="0.05"
+          value={brightness}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBrightness(parseFloat(e.currentTarget.value))}
         />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+        <span>{brightness.toFixed(2)}</span>
+      </div>
+
+      <div className="row">
+        <button onClick={applyBrightness}>Apply Brightness</button>
+      </div>
     </main>
   );
 }
 
 export default App;
+

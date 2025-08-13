@@ -8,6 +8,7 @@ pkgs.mkShell {
     cargo
     cargo-tauri
     nodejs
+    gcc
   ];
 
   buildInputs = with pkgs;[
