@@ -1,3 +1,4 @@
+#https://v2.tauri.app/start/prerequisites/
 let
   pkgs = import <nixpkgs> { };
 in
