@@ -38,7 +38,7 @@ function App() {
         console.log("First output:", (result as string[])[0]);
         setOutputs(result as string[]);
         
-        // Force a specific output for testing
+        // On Boot set the first output
         const firstOutput = (result as string[])[0];
         console.log("Setting output to:", firstOutput);
         setOutput(firstOutput);
