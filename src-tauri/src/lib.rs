@@ -6,10 +6,15 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+pub struct AppState {
+    pub debug: bool,
+}
+
 #[tauri::command]
-fn set_brightness(output: &str, value: f32) -> Result<String, String> {
+fn set_brightness(output: &str, value: f32, app_state: tauri::State<AppState>) -> Result<String, String> {
     let output_str = output.to_string();
     let value_str = value.to_string();
+    let debug = app_state.debug;
 
     let command_output = Command::new("xrandr")
         .arg("--output")
@@ -21,8 +26,10 @@ fn set_brightness(output: &str, value: f32) -> Result<String, String> {
     match command_output {
         Ok(output) => {
             if output.status.success() {
-                println!("Command executed successfully: xrandr --output {} --brightness {}", output_str, value_str);
-                println!("Stdout: {}", String::from_utf8_lossy(&output.stdout));
+                if debug {
+                    println!("Command executed successfully: xrandr --output {} --brightness {}", output_str, value_str);
+                    println!("Stdout: {}", String::from_utf8_lossy(&output.stdout));    
+                }
                 Ok(format!("Brightness set for {}: {}", output_str, value_str))
             } else {
                 eprintln!("Command failed: xrandr --output {} --brightness {}", output_str, value_str);
@@ -73,10 +80,11 @@ fn get_outputs() -> Result<Vec<String>, String> {
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
+pub fn run_with_debug(debug: bool) {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet, set_brightness, get_outputs])
+        .manage(AppState { debug })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
