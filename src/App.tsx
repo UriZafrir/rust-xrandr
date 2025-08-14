@@ -3,14 +3,15 @@ import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
 function App() {
-  const [brightness, setBrightness] = useState(1.0);
+  const [brightness, setBrightness] = useState<number | null>(null);
   const [output, setOutput] = useState("");
   const [outputs, setOutputs] = useState<string[]>([]);
+  const [isInitialSetup, setIsInitialSetup] = useState(true);
 
   async function applyBrightness() {
     console.log("applyBrightness called with output:", output);
-    if (!output) {
-      console.warn("No output selected. Cannot apply brightness.");
+    if (!output || brightness === null) {
+      console.warn("No output selected or brightness not set. Cannot apply brightness.");
       return;
     }
     try {
@@ -52,6 +53,9 @@ function App() {
           console.error("Error fetching brightness, using default:", brightnessError);
           // Keep default brightness of 1.0
         }
+        
+        // Initial setup is complete
+        setIsInitialSetup(false);
       } catch (error) {
         console.error("Error fetching outputs:", error);
         setOutputs([]);
@@ -63,13 +67,16 @@ function App() {
 
   useEffect(() => {
     console.log("Current output state in useEffect:", output);
-    if (output) {
+    // Only apply brightness automatically if this is not the initial setup
+    if (output && brightness !== null && !isInitialSetup) {
       console.log("useEffect calling applyBrightness with output:", output);
       applyBrightness();
+    } else if (isInitialSetup) {
+      console.log("Initial setup in progress, not applying brightness automatically");
     } else {
-      console.log("useEffect not calling applyBrightness because output is empty");
+      console.log("useEffect not calling applyBrightness because output is empty or brightness is not set");
     }
-  }, [brightness, output]);
+  }, [brightness, output, isInitialSetup]);
 
   return (
     <main className="container">
@@ -98,10 +105,11 @@ function App() {
           min="0.1"
           max="1.0"
           step="0.01"
-          value={brightness}
+          value={brightness !== null ? brightness : 1.0}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBrightness(parseFloat(e.currentTarget.value))}
+          disabled={isInitialSetup}
         />
-        <span>{brightness.toFixed(2)}</span>
+        <span>{brightness !== null ? brightness.toFixed(2) : "1.00"}</span>
       </div>
 
       <div className="row">
