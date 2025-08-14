@@ -7,7 +7,6 @@ function App() {
   const [output, setOutput] = useState("");
   const [outputs, setOutputs] = useState<string[]>([]);
 
-
   async function applyBrightness() {
     console.log("applyBrightness called with output:", output);
     if (!output) {
@@ -59,15 +58,6 @@ function App() {
 
   useEffect(() => {
     console.log("Current output state in useEffect:", output);
-    if (output) {
-      console.log("useEffect calling applyBrightness with output:", output);
-      applyBrightness();
-    } else {
-      console.log("useEffect not calling applyBrightness because output is empty");
-    }
-  }, [brightness, output]);
-
-  useEffect(() => {
     if (output) {
       console.log("useEffect calling applyBrightness with output:", output);
       applyBrightness();
