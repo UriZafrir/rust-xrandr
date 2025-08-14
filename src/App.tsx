@@ -43,10 +43,15 @@ function App() {
         console.log("Setting output to:", firstOutput);
         setOutput(firstOutput);
         
-        // Verify the output was set
-        setTimeout(() => {
-          console.log("Current output state after timeout:", output);
-        }, 100);
+        // Fetch initial brightness for this output
+        try {
+          const brightnessResult = await invoke("get_brightness", { output: firstOutput });
+          console.log("Fetched brightness:", brightnessResult);
+          setBrightness(brightnessResult as number);
+        } catch (brightnessError) {
+          console.error("Error fetching brightness, using default:", brightnessError);
+          // Keep default brightness of 1.0
+        }
       } catch (error) {
         console.error("Error fetching outputs:", error);
         setOutputs([]);
