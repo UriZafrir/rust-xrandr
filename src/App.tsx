@@ -92,7 +92,7 @@ function App() {
           id="brightness-range"
           min="0.1"
           max="1.0"
-          step="0.05"
+          step="0.01"
           value={brightness}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBrightness(parseFloat(e.currentTarget.value))}
         />
